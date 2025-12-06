@@ -1,0 +1,52 @@
+name: Security pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  security-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 1) Escaneo de dependencias (npm audit)
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: npm audit (high and critical)
+        run: npm audit --audit-level=high
+
+      # 2) SAST con Semgrep
+      - name: Run Semgrep (SAST)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: 'p/ci'   # reglas genéricas seguras para CI
+
+      # 3) Build de imagen Docker para escanear
+      - name: Build Docker image
+        run: docker build -t vuln-app:ci .
+
+      # 4) Escaneo de imagen/Dockerfile con Trivy
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: 'vuln-app:ci'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          exit-code: '1'   # si encuentra alta/critica, falla el job
+
+      # 5) (Opcional) búsqueda de secretos con Gitleaks
+      - name: Scan for secrets with Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --source=. --no-banner --redact

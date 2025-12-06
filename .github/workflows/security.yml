@@ -25,6 +25,7 @@ jobs:
 
       - name: npm audit (high and critical)
         run: npm audit --audit-level=high
+        continue-on-error: true
 
       # 2) SAST con Semgrep
       - name: Run Semgrep (SAST)

@@ -43,14 +43,26 @@ jobs:
         uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: 'vuln-app:ci'
+          format: 'json'
+          output: 'trivy-report.json'
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
-          exit-code: '1'   # si encuentra alta/critica, falla el job
+          exit-code: '1'
         continue-on-error: true
 
-      # 5) (Opcional) búsqueda de secretos con Gitleaks
+      # 5) Búsqueda de secretos con Gitleaks
       - name: Scan for secrets with Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
-          args: detect --source=. --no-banner --redact
+          args: detect --source=. --no-banner --redact --report-format json --report-path gitleaks-report.json
         continue-on-error: true
+
+      # 6) Subir los reportes como artefactos
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            trivy-report.json
+            gitleaks-report.json
+          if-no-files-found: ignore

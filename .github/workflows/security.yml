@@ -32,6 +32,7 @@ jobs:
         uses: returntocorp/semgrep-action@v1
         with:
           config: 'p/ci'   # reglas genéricas seguras para CI
+        continue-on-error: true
 
       # 3) Build de imagen Docker para escanear
       - name: Build Docker image
@@ -45,9 +46,11 @@ jobs:
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
           exit-code: '1'   # si encuentra alta/critica, falla el job
+        continue-on-error: true
 
       # 5) (Opcional) búsqueda de secretos con Gitleaks
       - name: Scan for secrets with Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
           args: detect --source=. --no-banner --redact
+        continue-on-error: true

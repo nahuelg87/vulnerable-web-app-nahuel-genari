@@ -1,19 +1,11 @@
-name: Deploy Vulnerable Application                                  # workflow name
+name: Deploy (disabled)
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+
 jobs:
-  deploy-heroku:
-    name: Deploy Heroku
+  noop:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
-        with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "app-vulnerable2022" #Must be unique in Heroku
-          heroku_email: "roxsrossve@gmail.com"
-          remote_branch: "master"
-          usedocker: true
+      - name: Deploy disabled
+        run: echo "Este workflow de deploy a Heroku está deshabilitado. Render maneja el despliegue."
